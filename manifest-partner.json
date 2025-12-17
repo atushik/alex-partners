@@ -1,0 +1,22 @@
+{
+  "name": "Espace Partenaire Tech",
+  "short_name": "Partenaire",
+  "start_url": "dashboard-partner.html",
+  "display": "standalone",
+  "background_color": "#eceff1",
+  "theme_color": "#2962ff",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "iconsicon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "iconsicon-192.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
