@@ -45,6 +45,10 @@
   .btn:active { transform: scale(0.98); box-shadow: 0 5px 10px rgba(41, 98, 255, 0.2); }
   .btn:hover { filter: brightness(1.1); }
 
+  .btn-install { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; border: none; padding: 18px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 1.1em; box-shadow: 0 10px 20px rgba(56, 239, 125, 0.3); transition: all 0.2s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; display:none; }
+  .btn-install:active { transform: scale(0.98); box-shadow: 0 5px 10px rgba(56, 239, 125, 0.2); }
+  .btn-install:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
   .btn-outline { background: #fff; color: #555; border: 1px solid #e0e0e0; padding: 16px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 1em; transition: 0.2s; width: 100%; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
   .btn-outline:hover { background: #f0f4f8; color: var(--primary); border-color: var(--primary); }
   .btn-outline:active { transform: scale(0.98); }
@@ -167,6 +171,7 @@
         <p style="color:#78909c;margin-bottom:25px;font-weight:500;font-size:1.05em" id="loginSub">Entrez votre mot de passe</p>
         <input type="password" id="pinInput" class="pin-input" placeholder="••••••">
         <button class="btn" onclick="checkPin()" id="loginBtn"><span class="emoji-anim">🔑</span> Connexion</button>
+        <button class="btn-install" id="installBtn"><span class="emoji-anim">📲</span> Installer l'App</button>
         <button class="btn-outline" onclick="window.location.href='form-hightech.html'" id="restaurantSpaceBtn"><span class="emoji-anim">⚙️</span> Espace Tech</button>
     </div>
 </div>
@@ -338,6 +343,7 @@ let CURRENT_SHOP = null;
 let ALL_ORDERS = [];
 let CURRENT_BALANCE = 0;
 let LIVE_UNSUBSCRIBE = null;
+let deferredPrompt;
 
 function changeLanguage(lang) {
     CUR_LANG = lang;
@@ -668,6 +674,24 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw-partner.js');
     });
 }
+
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+});
+
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        if(outcome === 'accepted') {
+            installBtn.style.display = 'none';
+        }
+    }
+});
 </script>
 </body>
 </html> 
