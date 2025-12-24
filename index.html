@@ -742,7 +742,7 @@ function renderOrderCard(id, data, container) {
     const itemsHtml = (data.items || []).map(i => `
         <div class="oc-item">
             <span class="oc-item-name">${i.qty || 1}x ${i.name || 'Produit'}</span>
-            <span>${parseFloat(i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
+            <span>${parseFloat(i.originalTotal || i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
         </div>
         ${i.options && i.options.length ? `<div style="font-size:0.9em;color:#90a4ae;margin-left:10px;margin-bottom:5px">Opts: ${i.options.join(', ')}</div>` : ''}
     `).join('');
@@ -757,7 +757,7 @@ function renderOrderCard(id, data, container) {
         </div>
     ` : '';
     
-    const partnerNet = parseFloat(data.partnerNet || data.totalPrice || 0).toFixed(2);
+    const partnerNet = parseFloat(data.partnerNet || data.restaurantNet || data.totalPrice || 0).toFixed(2);
 
     const card = document.createElement('div');
     card.className = `order-card ${statusColorClass}`;
