@@ -415,7 +415,8 @@ function startLiveListener() {
     if(LIVE_UNSUBSCRIBE) LIVE_UNSUBSCRIBE();
     LIVE_UNSUBSCRIBE = db.collection('orders')
         .where('shopId', '==', CURRENT_SHOP.shopId)
-        .where('status', 'in', ['pending_payment', 'pending', 'paid', 'accepted', 'cooking', 'ready_for_pickup'])
+        .where('status', 'in', ['pending', 'paid', 'accepted', 'cooking', 'ready_for_pickup'])
+        // ✅ REMOVED 'pending_payment' - orders appear ONLY after successful payment!
         // ✅ REMOVED .orderBy - requires Firestore index!
         .onSnapshot(snap => {
             const grid = document.getElementById('liveGrid');
@@ -429,7 +430,8 @@ function startLiveListener() {
                     const data = change.doc.data();
                     const now = new Date();
                     const orderDate = data.createdAt ? data.createdAt.toDate() : new Date();
-                    if((now - orderDate)/60000 < 5 && (data.status === 'pending_payment' || data.status === 'pending' || data.status === 'paid')) {
+                    // ✅ Sound only for paid/pending orders (after payment completed)
+                    if((now - orderDate)/60000 < 5 && (data.status === 'pending' || data.status === 'paid')) {
                         document.getElementById('orderSound').play();
                     }
                 }
@@ -454,11 +456,8 @@ function renderOrderCard(id, data, container) {
     let statusText = '';
     const t = TRANSLATIONS[CUR_LANG];
     
-    if(data.status === 'pending_payment') {
-        statusColorClass = 'oc-new';
-        statusText = 'PAIEMENT EN COURS 💳';
-        actionsHtml = `<div style="width:100%;text-align:center;color:#ff6f00;font-weight:bold;padding:10px;background:#fff3e0;border-radius:8px">En attente du paiement...</div>`;
-    } else if(data.status === 'pending' || data.status === 'paid') {
+    // ✅ Orders appear ONLY after payment (pending_payment excluded from query)
+    if(data.status === 'pending' || data.status === 'paid') {
         statusColorClass = 'oc-new';
         statusText = 'NOUVEAU ⚡';
         actionsHtml = `
