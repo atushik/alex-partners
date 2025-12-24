@@ -415,8 +415,8 @@ function startLiveListener() {
     if(LIVE_UNSUBSCRIBE) LIVE_UNSUBSCRIBE();
     LIVE_UNSUBSCRIBE = db.collection('orders')
         .where('shopId', '==', CURRENT_SHOP.shopId)
-        .where('status', 'in', ['pending', 'paid', 'accepted', 'cooking', 'ready_for_pickup'])
-        .orderBy('createdAt', 'desc')
+        .where('status', 'in', ['pending_payment', 'pending', 'paid', 'accepted', 'cooking', 'ready_for_pickup'])
+        // ✅ REMOVED .orderBy - requires Firestore index!
         .onSnapshot(snap => {
             const grid = document.getElementById('liveGrid');
             grid.innerHTML = '';
@@ -429,12 +429,22 @@ function startLiveListener() {
                     const data = change.doc.data();
                     const now = new Date();
                     const orderDate = data.createdAt ? data.createdAt.toDate() : new Date();
-                    if((now - orderDate)/60000 < 5 && (data.status === 'pending' || data.status === 'paid')) {
+                    if((now - orderDate)/60000 < 5 && (data.status === 'pending_payment' || data.status === 'pending' || data.status === 'paid')) {
                         document.getElementById('orderSound').play();
                     }
                 }
             });
-            snap.forEach(doc => renderOrderCard(doc.id, doc.data(), grid));
+            
+            // ✅ Client-side sorting
+            const orders = [];
+            snap.forEach(doc => orders.push({ id: doc.id, data: doc.data() }));
+            orders.sort((a, b) => {
+                const timeA = a.data.createdAt ? a.data.createdAt.toMillis() : 0;
+                const timeB = b.data.createdAt ? b.data.createdAt.toMillis() : 0;
+                return timeB - timeA;
+            });
+            
+            orders.forEach(order => renderOrderCard(order.id, order.data, grid));
         });
 }
 
@@ -444,7 +454,11 @@ function renderOrderCard(id, data, container) {
     let statusText = '';
     const t = TRANSLATIONS[CUR_LANG];
     
-    if(data.status === 'pending' || data.status === 'paid') {
+    if(data.status === 'pending_payment') {
+        statusColorClass = 'oc-new';
+        statusText = 'PAIEMENT EN COURS 💳';
+        actionsHtml = `<div style="width:100%;text-align:center;color:#ff6f00;font-weight:bold;padding:10px;background:#fff3e0;border-radius:8px">En attente du paiement...</div>`;
+    } else if(data.status === 'pending' || data.status === 'paid') {
         statusColorClass = 'oc-new';
         statusText = 'NOUVEAU ⚡';
         actionsHtml = `
@@ -567,7 +581,7 @@ async function requestPayout() {
 function loadOrders(){
     db.collection('orders')
       .where('shopId', '==', CURRENT_SHOP.shopId)
-      .orderBy('createdAt', 'desc')
+      // ✅ REMOVED .orderBy - requires index!
       .onSnapshot(snap => {
           ALL_ORDERS = [];
           let totalNet = 0;
@@ -579,6 +593,12 @@ function loadOrders(){
                   totalNet += parseFloat(d.restaurantNet || 0);
                   count++;
               }
+          });
+          // ✅ Sort on client
+          ALL_ORDERS.sort((a, b) => {
+              const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+              const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+              return timeB - timeA;
           });
           CURRENT_BALANCE = totalNet; 
           document.getElementById('salesVal').innerText = totalNet.toFixed(2) + " €";
