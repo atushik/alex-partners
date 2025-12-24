@@ -489,8 +489,38 @@ async function checkPin(){
         loadBankInfo();
         loadOrders();
         startLiveListener();
+        startPresenceHeartbeat();
         testSound();
     } catch(e) { alert("Erreur connexion"); }
+}
+
+let PRESENCE_INTERVAL = null;
+
+function startPresenceHeartbeat() {
+    // Update status immediately
+    updatePresence();
+    
+    // Update every 30 seconds
+    if(PRESENCE_INTERVAL) clearInterval(PRESENCE_INTERVAL);
+    PRESENCE_INTERVAL = setInterval(updatePresence, 30000);
+    
+    // Update on beforeunload
+    window.addEventListener('beforeunload', () => {
+        if(CURRENT_SHOP && CURRENT_SHOP.shopId) {
+            db.collection('shops').doc(CURRENT_SHOP.shopId).update({
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                isOnline: false
+            });
+        }
+    });
+}
+
+function updatePresence() {
+    if(!CURRENT_SHOP || !CURRENT_SHOP.shopId) return;
+    db.collection('shops').doc(CURRENT_SHOP.shopId).update({
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+        isOnline: true
+    }).catch(e => console.log('Presence update error:', e));
 }
 
 function testSound() {
