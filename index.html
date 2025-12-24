@@ -380,7 +380,7 @@ function updateMenuForPartner() {
         console.log('❌ updateMenuForPartner: CURRENT_SHOP is null');
         return;
     }
-    const isRestaurant = CURRENT_SHOP.category === 'restaurants';
+    const isRestaurant = CURRENT_SHOP.category === 'restaurant';
     const currentLang = CUR_LANG || 'fr';
     const t = TRANSLATIONS[currentLang];
     
@@ -404,7 +404,7 @@ function updateMenuForPartner() {
     
     // Update menu links
     const categoryUrls = {
-        'restaurants': {
+        'restaurant': {
             list: 'https://www.alexlivraison.shop/restaurants.html',
             register: 'https://www.alexlivraison.shop/form-restaurants.html'
         },
@@ -474,7 +474,7 @@ async function checkPin(){
         const categoryLinks = {
             'hightech': 'shop-hightech.html',
             'occasions': 'shop-occasions.html',
-            'restaurants': 'shop-restaurants.html'
+            'restaurant': 'shop-restaurants.html'
         };
         const shopPage = categoryLinks[CURRENT_SHOP.category] || 'shop-hightech.html';
         document.getElementById('nav-myshop').href = `https://www.alexlivraison.shop/${shopPage}?id=${CURRENT_SHOP.shopId}&from=dashboard`;
