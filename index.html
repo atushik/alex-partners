@@ -302,7 +302,7 @@ const db=firebase.firestore();
 const TRANSLATIONS = {
     fr: {
         loginT: "Espace Partenaire", loginS: "Entrez votre mot de passe", loginB: "Connexion", restaurantSpaceB: "S'inscrire", installApp: "Installer l'application",
-        home: "Accueil Site", back: "Nos Boutiques", shop: "Ma Boutique",
+        home: "Accueil Site", back: "Nos Boutiques", backRestaurant: "Nos Restaurants", shop: "Ma Boutique", shopRestaurant: "Mon Restaurant",
         settings: "S'inscrire", contact: "Support", logout: "Déconnexion",
         bal: "Solde Net", sales: "Ventes (Net)", orders: "Commandes",
         live: "Commandes en Direct", docs: "Documents Légaux", bank: "Coordonnées Bancaires (RIB)",
@@ -312,7 +312,7 @@ const TRANSLATIONS = {
     },
     en: {
         loginT: "Partner Area", loginS: "Enter your password", loginB: "Login", restaurantSpaceB: "Register", installApp: "Install App",
-        home: "Home Site", back: "Our Shops", shop: "My Shop",
+        home: "Home Site", back: "Our Shops", backRestaurant: "Our Restaurants", shop: "My Shop", shopRestaurant: "My Restaurant",
         settings: "Register", contact: "Support", logout: "Logout",
         bal: "Net Balance", sales: "Sales (Net)", orders: "Orders",
         live: "Live Orders", docs: "Legal Documents", bank: "Bank Details (IBAN)",
@@ -413,6 +413,20 @@ async function checkPin(){
         
         document.getElementById('shopName').innerText = CURRENT_SHOP.name;
         document.getElementById('shopIdDisplay').innerText = CURRENT_SHOP.shopId;
+        
+        // Update menu texts based on category
+        const isRestaurant = CURRENT_SHOP.category === 'restaurants';
+        const currentLang = document.documentElement.lang || 'fr';
+        const t = TRANSLATIONS[currentLang];
+        document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
+        document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
+        
+        // Update menu link URL for "Nos Boutiques/Restaurants"
+        const backLinks = {
+            'restaurants': 'https://www.alexlivraison.shop/restaurants.html',
+            'default': 'https://www.alexlivraison.shop/commercants.html'
+        };
+        document.querySelector('a[href*="commercants.html"]').href = backLinks[CURRENT_SHOP.category] || backLinks.default;
         
         // Show sound button after login
         const soundBtn = document.querySelector('.sound-btn');
