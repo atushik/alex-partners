@@ -412,41 +412,58 @@ function testSound() {
 }
 
 function startLiveListener() {
+    console.log('🔊 Starting live listener for shop:', CURRENT_SHOP.shopId);
     if(LIVE_UNSUBSCRIBE) LIVE_UNSUBSCRIBE();
     LIVE_UNSUBSCRIBE = db.collection('orders')
         .where('shopId', '==', CURRENT_SHOP.shopId)
-        .where('status', 'in', ['pending', 'paid', 'accepted', 'cooking', 'ready_for_pickup'])
-        // ✅ REMOVED 'pending_payment' - orders appear ONLY after successful payment!
+        // ✅ REMOVED status filter - show ALL orders, filter on client side!
         // ✅ REMOVED .orderBy - requires Firestore index!
         .onSnapshot(snap => {
+            console.log('📦 Snapshot received! Total orders:', snap.size);
             const grid = document.getElementById('liveGrid');
             grid.innerHTML = '';
-            if(snap.empty) {
+            
+            // ✅ Filter on client: exclude only cancelled and delivered
+            const activeOrders = [];
+            snap.forEach(doc => {
+                const data = doc.data();
+                console.log('📄 Order:', doc.id, 'Status:', data.status);
+                if(data.status !== 'cancelled' && data.status !== 'delivered') {
+                    activeOrders.push({ id: doc.id, data: data });
+                }
+            });
+            
+            console.log('✅ Active orders after filter:', activeOrders.length);
+            
+            if(activeOrders.length === 0) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#b0bec5;background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1px dashed #cfd8dc">Aucune commande active en ce moment</div>';
                 return;
             }
+            
             snap.docChanges().forEach(change => {
                 if (change.type === "added") {
                     const data = change.doc.data();
                     const now = new Date();
                     const orderDate = data.createdAt ? data.createdAt.toDate() : new Date();
-                    // ✅ Sound only for paid/pending orders (after payment completed)
-                    if((now - orderDate)/60000 < 5 && (data.status === 'pending' || data.status === 'paid')) {
-                        document.getElementById('orderSound').play();
+                    // ✅ Sound for new orders
+                    if((now - orderDate)/60000 < 5 && data.status !== 'cancelled' && data.status !== 'delivered') {
+                        console.log('🔔 Playing sound for new order');
+                        document.getElementById('orderSound').play().catch(e => console.log('Audio error:', e));
                     }
                 }
             });
             
             // ✅ Client-side sorting
-            const orders = [];
-            snap.forEach(doc => orders.push({ id: doc.id, data: doc.data() }));
-            orders.sort((a, b) => {
+            activeOrders.sort((a, b) => {
                 const timeA = a.data.createdAt ? a.data.createdAt.toMillis() : 0;
                 const timeB = b.data.createdAt ? b.data.createdAt.toMillis() : 0;
                 return timeB - timeA;
             });
             
-            orders.forEach(order => renderOrderCard(order.id, order.data, grid));
+            activeOrders.forEach(order => renderOrderCard(order.id, order.data, grid));
+        }, error => {
+            console.error('❌ Firestore error:', error);
+        });
         });
 }
 
@@ -456,8 +473,14 @@ function renderOrderCard(id, data, container) {
     let statusText = '';
     const t = TRANSLATIONS[CUR_LANG];
     
-    // ✅ Orders appear ONLY after payment (pending_payment excluded from query)
-    if(data.status === 'pending' || data.status === 'paid') {
+    console.log('🎨 Rendering card for order:', id, 'Status:', data.status);
+    
+    // ✅ Handle ALL order statuses
+    if(data.status === 'pending_payment') {
+        statusColorClass = 'oc-new';
+        statusText = 'PAIEMENT EN COURS 💳';
+        actionsHtml = `<div style="width:100%;text-align:center;color:#ff6f00;font-weight:bold;padding:10px;background:#fff3e0;border-radius:8px">En attente du paiement client...</div>`;
+    } else if(data.status === 'pending' || data.status === 'paid') {
         statusColorClass = 'oc-new';
         statusText = 'NOUVEAU ⚡';
         actionsHtml = `
