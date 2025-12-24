@@ -528,6 +528,65 @@ function testSound() {
     audio.play().catch(e => console.log("Audio require interaction"));
 }
 
+async function sendPushNotification(orderId, orderData) {
+    console.log('📲 Attempting to send push notification');
+    
+    // Check if notifications are supported and permitted
+    if (!('Notification' in window)) {
+        console.log('❌ Notifications not supported');
+        return;
+    }
+    
+    if (Notification.permission !== 'granted') {
+        console.log('⚠️ Notification permission not granted');
+        return;
+    }
+    
+    // Try Service Worker notification first (works in background)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.showNotification('🔔 Nouvelle Commande!', {
+                body: `Commande de ${orderData.customer?.name || 'Client'}\nTotal: ${orderData.totalPrice}€`,
+                icon: '/icon.jpg',
+                badge: '/icon.jpg',
+                vibrate: [300, 100, 300, 100, 300],
+                tag: `order-${orderId}`,
+                requireInteraction: true,
+                silent: false,
+                data: { orderId, orderData },
+                actions: [
+                    { action: 'view', title: '👀 Voir' },
+                    { action: 'dismiss', title: '❌ Fermer' }
+                ]
+            });
+            console.log('✅ Push notification sent via SW');
+            return;
+        } catch (e) {
+            console.log('⚠️ SW notification failed:', e);
+        }
+    }
+    
+    // Fallback to browser notification (works only when app is open)
+    try {
+        const notification = new Notification('🔔 Nouvelle Commande!', {
+            body: `Commande de ${orderData.customer?.name || 'Client'}\nTotal: ${orderData.totalPrice}€`,
+            icon: '/icon.jpg',
+            requireInteraction: true,
+            silent: false
+        });
+        
+        notification.onclick = () => {
+            window.focus();
+            notification.close();
+        };
+        
+        console.log('✅ Browser notification sent');
+    } catch (e) {
+        console.log('❌ Browser notification failed:', e);
+    }
+}
+
 function startLiveListener() {
     console.log('🔊 Starting live listener for shop:', CURRENT_SHOP.shopId);
     if(LIVE_UNSUBSCRIBE) LIVE_UNSUBSCRIBE();
@@ -562,10 +621,13 @@ function startLiveListener() {
                     const data = change.doc.data();
                     const now = new Date();
                     const orderDate = data.createdAt ? data.createdAt.toDate() : new Date();
-                    // ✅ Sound for new orders
+                    // ✅ Sound + Push notification for new orders
                     if((now - orderDate)/60000 < 5 && data.status !== 'cancelled' && data.status !== 'delivered') {
                         console.log('🔔 Playing sound for new order');
                         document.getElementById('orderSound').play().catch(e => console.log('Audio error:', e));
+                        
+                        // Send push notification
+                        sendPushNotification(change.doc.id, data);
                     }
                 }
             });
@@ -864,9 +926,21 @@ function initFloatingLogos() {
 // Initialize on page load
 initFloatingLogos();
 
+// Register Service Worker with push notifications
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw-partner.js').catch(e => console.log('SW registration failed:', e));
+    window.addEventListener('load', async () => {
+        try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('✅ Service Worker registered:', registration.scope);
+            
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                console.log('🔔 Notification permission:', permission);
+            }
+        } catch (e) {
+            console.log('❌ SW registration failed:', e);
+        }
     });
 }
 
