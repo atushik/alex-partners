@@ -376,16 +376,31 @@ function changeLanguage(lang) {
 }
 
 function updateMenuForPartner() {
-    if (!CURRENT_SHOP) return;
+    if (!CURRENT_SHOP) {
+        console.log('❌ updateMenuForPartner: CURRENT_SHOP is null');
+        return;
+    }
     const isRestaurant = CURRENT_SHOP.category === 'restaurants';
-    const currentLang = document.documentElement.lang || 'fr';
+    const currentLang = CUR_LANG || 'fr';
     const t = TRANSLATIONS[currentLang];
     
-    console.log('🔧 updateMenuForPartner: category=', CURRENT_SHOP.category, 'isRestaurant=', isRestaurant);
+    console.log('🔧 updateMenuForPartner called');
+    console.log('   Shop:', CURRENT_SHOP.name);
+    console.log('   Category:', CURRENT_SHOP.category);
+    console.log('   isRestaurant:', isRestaurant);
+    console.log('   Language:', currentLang);
+    console.log('   backRestaurant:', t.backRestaurant);
+    console.log('   shopRestaurant:', t.shopRestaurant);
     
     // Update menu text
-    document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
-    document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
+    const backText = isRestaurant ? t.backRestaurant : t.back;
+    const shopText = isRestaurant ? t.shopRestaurant : t.shop;
+    
+    console.log('   Setting back to:', backText);
+    console.log('   Setting shop to:', shopText);
+    
+    document.getElementById('m-back').innerText = backText;
+    document.getElementById('m-shop').innerText = shopText;
     
     // Update menu links
     const categoryUrls = {
@@ -402,7 +417,9 @@ function updateMenuForPartner() {
     document.getElementById('nav-back').href = urls.list;
     document.getElementById('nav-settings').href = urls.register;
     
-    console.log('✅ Menu updated: back="' + document.getElementById('m-back').innerText + '" shop="' + document.getElementById('m-shop').innerText + '"');
+    console.log('✅ Menu updated successfully!');
+    console.log('   Final back text:', document.getElementById('m-back').innerText);
+    console.log('   Final shop text:', document.getElementById('m-shop').innerText);
 }
 
 function showRegistrationOptions() {
