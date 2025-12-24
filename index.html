@@ -353,9 +353,7 @@ function changeLanguage(lang) {
     document.getElementById('m-home').innerText = t.home;
     
     // Dynamic menu text based on partner category
-    const isRestaurant = CURRENT_SHOP && CURRENT_SHOP.category === 'restaurants';
-    document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
-    document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
+    updateMenuForPartner();
     
     document.getElementById('m-settings').innerText = t.settings;
     document.getElementById('m-contact').innerText = t.contact;
@@ -375,6 +373,36 @@ function changeLanguage(lang) {
     document.getElementById('th-det').innerText = t.det;
     document.getElementById('th-stat').innerText = t.stat;
     toggleMenu();
+}
+
+function updateMenuForPartner() {
+    if (!CURRENT_SHOP) return;
+    const isRestaurant = CURRENT_SHOP.category === 'restaurants';
+    const currentLang = document.documentElement.lang || 'fr';
+    const t = TRANSLATIONS[currentLang];
+    
+    console.log('🔧 updateMenuForPartner: category=', CURRENT_SHOP.category, 'isRestaurant=', isRestaurant);
+    
+    // Update menu text
+    document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
+    document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
+    
+    // Update menu links
+    const categoryUrls = {
+        'restaurants': {
+            list: 'https://www.alexlivraison.shop/restaurants.html',
+            register: 'https://www.alexlivraison.shop/form-restaurants.html'
+        },
+        'default': {
+            list: 'https://www.alexlivraison.shop/commercants.html',
+            register: 'https://www.alexlivraison.shop/commercants.html'
+        }
+    };
+    const urls = categoryUrls[CURRENT_SHOP.category] || categoryUrls.default;
+    document.getElementById('nav-back').href = urls.list;
+    document.getElementById('nav-settings').href = urls.register;
+    
+    console.log('✅ Menu updated: back="' + document.getElementById('m-back').innerText + '" shop="' + document.getElementById('m-shop').innerText + '"');
 }
 
 function showRegistrationOptions() {
@@ -418,29 +446,8 @@ async function checkPin(){
         document.getElementById('shopName').innerText = CURRENT_SHOP.name;
         document.getElementById('shopIdDisplay').innerText = CURRENT_SHOP.shopId;
         
-        // Update menu texts and links based on category
-        const isRestaurant = CURRENT_SHOP.category === 'restaurants';
-        const currentLang = document.documentElement.lang || 'fr';
-        const t = TRANSLATIONS[currentLang];
-        console.log('🔧 Menu Update: isRestaurant=', isRestaurant, 'category=', CURRENT_SHOP.category);
-        console.log('🔧 Texts: back="' + (isRestaurant ? t.backRestaurant : t.back) + '" shop="' + (isRestaurant ? t.shopRestaurant : t.shop) + '"');
-        document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
-        document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
-        
-        // Update all menu links based on category
-        const categoryUrls = {
-            'restaurants': {
-                list: 'https://www.alexlivraison.shop/restaurants.html',
-                register: 'https://www.alexlivraison.shop/form-restaurants.html'
-            },
-            'default': {
-                list: 'https://www.alexlivraison.shop/commercants.html',
-                register: 'https://www.alexlivraison.shop/commercants.html'
-            }
-        };
-        const urls = categoryUrls[CURRENT_SHOP.category] || categoryUrls.default;
-        document.getElementById('nav-back').href = urls.list;
-        document.getElementById('nav-settings').href = urls.register;
+        // Update menu for partner category
+        updateMenuForPartner();
         
         // Show sound button after login
         const soundBtn = document.querySelector('.sound-btn');
