@@ -351,8 +351,12 @@ function changeLanguage(lang) {
     document.getElementById('regBtnText').innerText = t.restaurantSpaceB;
     document.getElementById('installBtnText').innerText = t.installApp;
     document.getElementById('m-home').innerText = t.home;
-    document.getElementById('m-back').innerText = t.back;
-    document.getElementById('m-shop').innerText = t.shop;
+    
+    // Dynamic menu text based on partner category
+    const isRestaurant = CURRENT_SHOP && CURRENT_SHOP.category === 'restaurants';
+    document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
+    document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
+    
     document.getElementById('m-settings').innerText = t.settings;
     document.getElementById('m-contact').innerText = t.contact;
     document.getElementById('m-logout').innerText = t.logout;
