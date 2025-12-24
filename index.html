@@ -599,17 +599,37 @@ function startLiveListener() {
             const grid = document.getElementById('liveGrid');
             grid.innerHTML = '';
             
-            // ✅ Filter on client: exclude only cancelled and delivered
+            // ✅ Filter: Show only PAID orders (after successful payment)
             const activeOrders = [];
+            const now = Date.now();
+            
             snap.forEach(doc => {
                 const data = doc.data();
                 console.log('📄 Order:', doc.id, 'Status:', data.status);
-                if(data.status !== 'cancelled' && data.status !== 'delivered') {
+                
+                // Only show orders with status 'paid' or 'accepted' or later stages
+                if(data.status === 'paid' || data.status === 'accepted' || data.status === 'cooking' || data.status === 'ready_for_pickup') {
+                    // Check if paid order is older than 5 minutes and not accepted
+                    if(data.status === 'paid') {
+                        const orderTime = data.createdAt ? data.createdAt.toMillis() : 0;
+                        const ageMinutes = (now - orderTime) / 60000;
+                        
+                        if(ageMinutes > 5) {
+                            console.log('⏰ Order too old, auto-cancelling:', doc.id);
+                            // Auto-cancel after 5 minutes if not accepted
+                            db.collection('orders').doc(doc.id).update({
+                                status: 'cancelled',
+                                cancelReason: 'Non accepté dans les 5 minutes'
+                            });
+                            return; // Skip this order
+                        }
+                    }
+                    
                     activeOrders.push({ id: doc.id, data: data });
                 }
             });
             
-            console.log('✅ Active orders after filter:', activeOrders.length);
+            console.log('✅ Active PAID orders:', activeOrders.length);
             
             if(activeOrders.length === 0) {
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#b0bec5;background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1px dashed #cfd8dc">Aucune commande active en ce moment</div>';
@@ -692,14 +712,14 @@ function renderOrderCard(id, data, container) {
     const itemsHtml = (data.items || []).map(i => `
         <div class="oc-item">
             <span class="oc-item-name">${i.qty || 1}x ${i.name || 'Produit'}</span>
-            <span>${(i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
+            <span>${parseFloat(i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
         </div>
         ${i.options && i.options.length ? `<div style="font-size:0.9em;color:#90a4ae;margin-left:10px;margin-bottom:5px">Opts: ${i.options.join(', ')}</div>` : ''}
     `).join('');
     
     console.log('📦 Items HTML generated:', itemsHtml.length, 'chars');
     
-    // Customer address display    // Customer address display
+    // Customer address display
     const addressHtml = data.customer && data.customer.address ? `
         <div style="margin:10px 0;padding:8px;background:#f5f5f5;border-radius:6px;font-size:0.9em">
             <strong>📍 Adresse:</strong> ${data.customer.address}
@@ -707,7 +727,7 @@ function renderOrderCard(id, data, container) {
         </div>
     ` : '';
     
-    const partnerNet = (data.partnerNet || data.totalPrice || 0).toFixed(2);
+    const partnerNet = parseFloat(data.partnerNet || data.totalPrice || 0).toFixed(2);
 
     const card = document.createElement('div');
     card.className = `order-card ${statusColorClass}`;
@@ -828,9 +848,10 @@ function loadOrders(){
           let count = 0;
           snap.forEach(doc => {
               const d = doc.data();
-              if(d.status !== 'cancelled') {
+              // Count only ACCEPTED orders (not just paid)
+              if(d.status === 'accepted' || d.status === 'cooking' || d.status === 'ready_for_pickup' || d.status === 'delivered') {
                   ALL_ORDERS.push(d);
-                  totalNet += parseFloat(d.restaurantNet || 0);
+                  totalNet += parseFloat(d.restaurantNet || d.partnerNet || 0);
                   count++;
               }
           });
