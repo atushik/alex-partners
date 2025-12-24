@@ -192,9 +192,9 @@
     </div>
     <nav>
         <a href="https://www.alexlivraison.shop" class="menu-link"><span class="emoji-anim">🏠</span> <span id="m-home">Accueil Site</span></a>
-        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link"><span class="emoji-anim">🏪</span> <span id="m-back">Nos Boutiques</span></a>
+        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link" id="nav-back"><span class="emoji-anim">🏪</span> <span id="m-back">Nos Boutiques</span></a>
         <a href="#" class="menu-link" id="nav-myshop"><span class="emoji-anim">📊</span> <span id="m-shop">Ma Boutique</span></a>
-        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link"><span class="emoji-anim">📝</span> <span id="m-settings">S'inscrire</span></a>
+        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link" id="nav-settings"><span class="emoji-anim">📝</span> <span id="m-settings">S'inscrire</span></a>
         <a href="https://wa.me/33677171188" target="_blank" class="menu-link"><span class="emoji-anim">🎧</span> <span id="m-contact">Support</span></a>
         <button onclick="location.reload()" class="menu-link" style="background:none;border:none;width:100%;text-align:left;color:#ff5252"><span class="emoji-anim">🔓</span> <span id="m-logout">Déconnexion</span></button>
         
@@ -414,19 +414,27 @@ async function checkPin(){
         document.getElementById('shopName').innerText = CURRENT_SHOP.name;
         document.getElementById('shopIdDisplay').innerText = CURRENT_SHOP.shopId;
         
-        // Update menu texts based on category
+        // Update menu texts and links based on category
         const isRestaurant = CURRENT_SHOP.category === 'restaurants';
         const currentLang = document.documentElement.lang || 'fr';
         const t = TRANSLATIONS[currentLang];
         document.getElementById('m-back').innerText = isRestaurant ? t.backRestaurant : t.back;
         document.getElementById('m-shop').innerText = isRestaurant ? t.shopRestaurant : t.shop;
         
-        // Update menu link URL for "Nos Boutiques/Restaurants"
-        const backLinks = {
-            'restaurants': 'https://www.alexlivraison.shop/restaurants.html',
-            'default': 'https://www.alexlivraison.shop/commercants.html'
+        // Update all menu links based on category
+        const categoryUrls = {
+            'restaurants': {
+                list: 'https://www.alexlivraison.shop/restaurants.html',
+                register: 'https://www.alexlivraison.shop/form-restaurants.html'
+            },
+            'default': {
+                list: 'https://www.alexlivraison.shop/commercants.html',
+                register: 'https://www.alexlivraison.shop/commercants.html'
+            }
         };
-        document.querySelector('a[href*="commercants.html"]').href = backLinks[CURRENT_SHOP.category] || backLinks.default;
+        const urls = categoryUrls[CURRENT_SHOP.category] || categoryUrls.default;
+        document.getElementById('nav-back').href = urls.list;
+        document.getElementById('nav-settings').href = urls.register;
         
         // Show sound button after login
         const soundBtn = document.querySelector('.sound-btn');
