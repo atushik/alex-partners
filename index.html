@@ -183,6 +183,9 @@
         <div class="shop-title" id="shopName">Chargement...</div>
         <div class="shop-id" id="shopIdDisplay">...</div>
     </div>
+    <button id="notifBtn" onclick="enableNotifications()" style="background:#ffa726;color:#fff;border:none;padding:8px 16px;border-radius:10px;font-weight:600;cursor:pointer;display:none;font-size:0.85em;margin-left:10px">
+        🔔 Activer
+    </button>
 </div>
 
 <div class="menu-overlay" id="menuOverlay"></div>
@@ -491,7 +494,34 @@ async function checkPin(){
         startLiveListener();
         startPresenceHeartbeat();
         testSound();
+        checkNotificationPermission(); // Check if notifications are enabled
     } catch(e) { alert("Erreur connexion"); }
+}
+
+function checkNotificationPermission() {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+        document.getElementById('notifBtn').style.display = 'block';
+    }
+}
+
+async function enableNotifications() {
+    if (!('Notification' in window)) {
+        alert('Votre navigateur ne supporte pas les notifications');
+        return;
+    }
+    
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            document.getElementById('notifBtn').style.display = 'none';
+            alert('✅ Notifications activées! Vous recevrez les nouvelles commandes.');
+        } else {
+            alert('❌ Permission refusée. Activez les dans les paramètres du navigateur.');
+        }
+    } catch (e) {
+        console.error('Notification error:', e);
+        alert('Erreur lors de l\'activation des notifications');
+    }
 }
 
 let PRESENCE_INTERVAL = null;
