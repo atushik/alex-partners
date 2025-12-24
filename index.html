@@ -646,12 +646,19 @@ function startLiveListener() {
 }
 
 function renderOrderCard(id, data, container) {
-    let statusColorClass = '';
-    let actionsHtml = '';
-    let statusText = '';
-    const t = TRANSLATIONS[CUR_LANG];
-    
-    console.log('🎨 Rendering card for order:', id, 'Status:', data.status);
+    try {
+        console.log('🎨 Rendering card for order:', id, 'Status:', data.status);
+        
+        let statusColorClass = '';
+        let actionsHtml = '';
+        let statusText = '';
+        const t = TRANSLATIONS[CUR_LANG];
+        
+        // Safety check
+        if (!data || !id || !container) {
+            console.error('❌ Missing data for renderOrderCard:', { id, data, container });
+            return;
+        }
     
     // ✅ Handle ALL order statuses
     if(data.status === 'pending_payment') {
@@ -682,15 +689,17 @@ function renderOrderCard(id, data, container) {
         actionsHtml = `<div style="width:100%;text-align:center;color:#2e7d32;font-weight:bold;padding:10px;background:#e8f5e9;border-radius:8px">En attente de prise en charge...</div>`;
     }
 
-    const itemsHtml = data.items.map(i => `
+    const itemsHtml = (data.items || []).map(i => `
         <div class="oc-item">
-            <span class="oc-item-name">${i.qty}x ${i.name}</span>
+            <span class="oc-item-name">${i.qty || 1}x ${i.name || 'Produit'}</span>
             <span>${(i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
         </div>
         ${i.options && i.options.length ? `<div style="font-size:0.9em;color:#90a4ae;margin-left:10px;margin-bottom:5px">Opts: ${i.options.join(', ')}</div>` : ''}
     `).join('');
     
-    // Customer address display
+    console.log('📦 Items HTML generated:', itemsHtml.length, 'chars');
+    
+    // Customer address display    // Customer address display
     const addressHtml = data.customer && data.customer.address ? `
         <div style="margin:10px 0;padding:8px;background:#f5f5f5;border-radius:6px;font-size:0.9em">
             <strong>📍 Adresse:</strong> ${data.customer.address}
@@ -708,17 +717,30 @@ function renderOrderCard(id, data, container) {
             <span class="oc-time">${data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleTimeString().substr(0,5) : '--:--'}</span>
         </div>
         <div style="font-weight:900;color:#2962ff;margin-bottom:12px;font-size:1.1em">${statusText}</div>
-        <div class="oc-client">${data.customer.name}</div>
-        <div class="oc-phone"><i class="fas fa-phone"></i> ${data.customer.phone}</div>
+        <div class="oc-client">${data.customer?.name || 'Client'}</div>
+        <div class="oc-phone"><i class="fas fa-phone"></i> ${data.customer?.phone || 'N/A'}</div>
         ${addressHtml}
         <div class="oc-items">${itemsHtml}</div>
         <div class="oc-total">Votre revenu: ${partnerNet} €</div>
         <div class="oc-note" style="font-size:0.9em;color:#546e7a;margin-bottom:15px;background:#f5f7fa;padding:10px;border-radius:10px;line-height:1.4">
-            Mode: <strong>${data.deliveryType}</strong> | Paiement: <strong>${data.paymentMethod === 'card' ? 'CB (Payé)' : 'Espèces'}</strong>
+            Mode: <strong>${data.deliveryType || 'N/A'}</strong> | Paiement: <strong>${data.paymentMethod === 'card' ? 'CB (Payé)' : 'Espèces'}</strong>
         </div>
         <div class="oc-actions">${actionsHtml}</div>
     `;
+    
+    console.log('✅ Card created for order:', id);
     container.appendChild(card);
+    console.log('✅ Card appended to container');
+    
+    } catch (error) {
+        console.error('❌ Error rendering order card:', id, error);
+        console.error('Order data:', data);
+        // Show error card
+        const errorCard = document.createElement('div');
+        errorCard.className = 'order-card';
+        errorCard.innerHTML = `<div style="color:red;padding:20px">Erreur d'affichage de la commande #${id.substr(0,8)}</div>`;
+        container.appendChild(errorCard);
+    }
 }
 
 function updateStatus(id, status) {
