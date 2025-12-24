@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 <meta name="theme-color" content="#2962ff"/>
-<title>Espace Partenaire Tech - AlexLivraison</title>
+<title>Espace Partenaire - AlexLivraison</title>
 <link rel="manifest" href="manifest-partner.json">
 <link rel="apple-touch-icon" href="icon.jpg">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,7 +16,7 @@
   :root { 
     --primary: #2962ff; 
     --primary-gradient: linear-gradient(135deg, #2962ff 0%, #00bcd4 100%);
-    --bg-gradient: linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%);
+    --bg-gradient: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
     --text: #1a237e; 
     --card-bg: rgba(255, 255, 255, 0.96); 
     --shadow: 0 10px 30px rgba(0,0,0,0.08); 
@@ -26,7 +26,7 @@
   body { font-family: 'Segoe UI', 'Roboto', sans-serif; background: var(--bg-gradient); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; min-height: 100vh; }
   
   .bg-logos { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
-  .floating-logo { position: absolute; width: 90px; height: 90px; border-radius: 50%; opacity: 0.06; animation: floatUp 25s linear infinite; object-fit: cover; filter: hue-rotate(180deg) grayscale(30%); mix-blend-mode: multiply; }
+  .floating-logo { position: absolute; width: 40px; height: 40px; border-radius: 50%; opacity: 0.08; animation: floatUp 25s linear infinite; object-fit: cover; filter: hue-rotate(180deg) grayscale(20%); mix-blend-mode: multiply; }
   .floating-logo:nth-child(1) { left: 10%; animation-duration: 20s; animation-delay: 0s; }
   .floating-logo:nth-child(2) { left: 80%; animation-duration: 28s; animation-delay: 2s; }
   .floating-logo:nth-child(3) { left: 40%; animation-duration: 22s; animation-delay: 5s; }
@@ -34,7 +34,7 @@
   .floating-logo:nth-child(5) { left: 60%; animation-duration: 30s; animation-delay: 1s; }
   @keyframes floatUp { 0% { transform: translateY(110vh) rotate(0deg); } 100% { transform: translateY(-10vh) rotate(360deg); } }
 
-  .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+  .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
   .login-card { background: var(--card-bg); backdrop-filter: blur(15px); padding: 50px 35px; border-radius: 35px; text-align: center; border: var(--glass-border); box-shadow: 0 20px 60px rgba(0,0,0,0.1); width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; margin: 0 auto; position: relative; z-index: 2; transition: transform 0.3s; }
   .login-card:hover { transform: translateY(-5px); }
   
@@ -45,9 +45,12 @@
   .btn:active { transform: scale(0.98); box-shadow: 0 5px 10px rgba(41, 98, 255, 0.2); }
   .btn:hover { filter: brightness(1.1); }
 
-  .btn-install { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; border: none; padding: 18px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 1.1em; box-shadow: 0 10px 20px rgba(56, 239, 125, 0.3); transition: all 0.2s ease; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; display:none; }
+  .btn-install { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; border: none; padding: 18px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 1.1em; box-shadow: 0 10px 20px rgba(56, 239, 125, 0.3); transition: all 0.2s ease; width: 100%; display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; }
   .btn-install:active { transform: scale(0.98); box-shadow: 0 5px 10px rgba(56, 239, 125, 0.2); }
   .btn-install:hover { filter: brightness(1.1); transform: translateY(-2px); }
+  
+  @keyframes sticker-bounce { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-8px) rotate(-10deg); } 75% { transform: translateY(-5px) rotate(10deg); } }
+  .sticker-anim { display: inline-block; animation: sticker-bounce 2s ease-in-out infinite; }
 
   .btn-outline { background: #fff; color: #555; border: 1px solid #e0e0e0; padding: 16px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 1em; transition: 0.2s; width: 100%; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
   .btn-outline:hover { background: #f0f4f8; color: var(--primary); border-color: var(--primary); }
@@ -145,7 +148,7 @@
   .btn-download { background: #ffa000; color: white; border: none; padding: 16px 28px; border-radius: 15px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; box-shadow: 0 8px 20px rgba(255, 160, 0, 0.3); transition: 0.2s; }
   .btn-download:hover { transform: translateY(-2px); }
 
-  .sound-btn { position: fixed; bottom: 35px; right: 35px; width: 60px; height: 60px; background: #263238; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.2s; }
+  .sound-btn { position: fixed; bottom: 35px; right: 35px; width: 60px; height: 60px; background: #263238; color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.2s; }
   .sound-btn:active { transform: scale(0.9); }
   .sound-btn:hover { transform: scale(1.05); }
 
@@ -154,25 +157,19 @@
 </head>
 <body>
 
-<div class="bg-logos" id="bgLogos">
-    <img src="icon.jpg" class="floating-logo">
-    <img src="icon.jpg" class="floating-logo">
-    <img src="icon.jpg" class="floating-logo">
-    <img src="icon.jpg" class="floating-logo">
-    <img src="icon.jpg" class="floating-logo">
-</div>
+<div class="bg-logos" id="bgLogos"></div>
 
 <audio id="orderSound" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3" preload="auto"></audio>
 
 <div id="loginScreen" class="login-overlay">
     <div class="login-card">
         <img src="icon.jpg" style="width:150px;height:150px;border-radius:35px;margin-bottom:30px;box-shadow:0 15px 30px rgba(0,0,0,0.1)">
-        <h2 style="margin:0 0 10px 0;color:#1a237e;font-size:2em;font-weight:800" id="loginTitle">Espace Partenaire Tech</h2>
+        <h2 style="margin:0 0 10px 0;color:#1a237e;font-size:2em;font-weight:800" id="loginTitle">Espace Partenaire</h2>
         <p style="color:#78909c;margin-bottom:25px;font-weight:500;font-size:1.05em" id="loginSub">Entrez votre mot de passe</p>
         <input type="password" id="pinInput" class="pin-input" placeholder="••••••">
         <button class="btn" onclick="checkPin()" id="loginBtn"><span class="emoji-anim">🔑</span> Connexion</button>
-        <button class="btn-install" id="installBtn"><span class="emoji-anim">📲</span> Installer l'App</button>
-        <button class="btn-outline" onclick="window.location.href='form-hightech.html'" id="restaurantSpaceBtn"><span class="emoji-anim">⚙️</span> Espace Tech</button>
+        <button class="btn-outline" onclick="showRegistrationOptions()" id="restaurantSpaceBtn"><span class="emoji-anim">📝</span> <span id="regBtnText">S'inscrire</span></button>
+        <button class="btn-install" id="installBtn"><span class="sticker-anim">📲</span> <span id="installBtnText">Installer l'application</span></button>
     </div>
 </div>
 
@@ -194,11 +191,11 @@
         <button class="close-btn" id="closeMenu">✕</button>
     </div>
     <nav>
-        <a href="index.html" class="menu-link"><span class="emoji-anim">🏠</span> <span id="m-home">Accueil Site</span></a>
-        <a href="hightech.html" class="menu-link"><span class="emoji-anim">💻</span> <span id="m-back">Retour High-Tech</span></a>
-        <a href="#" class="menu-link" id="nav-myshop"><span class="emoji-anim">🏪</span> <span id="m-shop">Ma Boutique</span></a>
-        <a href="form-hightech.html" class="menu-link"><span class="emoji-anim">⚙️</span> <span id="m-settings">Espace Tech</span></a>
-        <a href="https://wa.me/33677171188" target="_blank" class="menu-link"><span class="emoji-anim">🎧</span> <span id="m-contact">Support Technique</span></a>
+        <a href="https://www.alexlivraison.shop" class="menu-link"><span class="emoji-anim">🏠</span> <span id="m-home">Accueil Site</span></a>
+        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link"><span class="emoji-anim">🏪</span> <span id="m-back">Nos Boutiques</span></a>
+        <a href="#" class="menu-link" id="nav-myshop"><span class="emoji-anim">📊</span> <span id="m-shop">Ma Boutique</span></a>
+        <a href="https://www.alexlivraison.shop/commercants.html" class="menu-link"><span class="emoji-anim">📝</span> <span id="m-settings">S'inscrire</span></a>
+        <a href="https://wa.me/33677171188" target="_blank" class="menu-link"><span class="emoji-anim">🎧</span> <span id="m-contact">Support</span></a>
         <button onclick="location.reload()" class="menu-link" style="background:none;border:none;width:100%;text-align:left;color:#ff5252"><span class="emoji-anim">🔓</span> <span id="m-logout">Déconnexion</span></button>
         
         <div class="lang-section">
@@ -304,9 +301,9 @@ const db=firebase.firestore();
 
 const TRANSLATIONS = {
     fr: {
-        loginT: "Espace Partenaire Tech", loginS: "Entrez votre mot de passe", loginB: "Connexion", restaurantSpaceB: "Espace Tech",
-        home: "Accueil Site", back: "Retour High-Tech", shop: "Ma Boutique",
-        settings: "Espace Tech", contact: "Support Technique", logout: "Déconnexion",
+        loginT: "Espace Partenaire", loginS: "Entrez votre mot de passe", loginB: "Connexion", restaurantSpaceB: "S'inscrire", installApp: "Installer l'application",
+        home: "Accueil Site", back: "Nos Boutiques", shop: "Ma Boutique",
+        settings: "S'inscrire", contact: "Support", logout: "Déconnexion",
         bal: "Solde Net", sales: "Ventes (Net)", orders: "Commandes",
         live: "Commandes en Direct", docs: "Documents Légaux", bank: "Coordonnées Bancaires (RIB)",
         save: "Enregistrer les coordonnées", hist: "Historique des Ventes",
@@ -314,9 +311,9 @@ const TRANSLATIONS = {
         accept: "Accepter", cancel: "Annuler", completed: "Prêt pour retrait / Envoi"
     },
     en: {
-        loginT: "Tech Partner Area", loginS: "Enter your password", loginB: "Login", restaurantSpaceB: "Tech Space",
-        home: "Home Site", back: "Back to High-Tech", shop: "My Shop",
-        settings: "Tech Settings", contact: "Tech Support", logout: "Logout",
+        loginT: "Partner Area", loginS: "Enter your password", loginB: "Login", restaurantSpaceB: "Register", installApp: "Install App",
+        home: "Home Site", back: "Our Shops", shop: "My Shop",
+        settings: "Register", contact: "Support", logout: "Logout",
         bal: "Net Balance", sales: "Sales (Net)", orders: "Orders",
         live: "Live Orders", docs: "Legal Documents", bank: "Bank Details (IBAN)",
         save: "Save Details", hist: "Sales History",
@@ -351,7 +348,8 @@ function changeLanguage(lang) {
     document.getElementById('loginTitle').innerText = t.loginT;
     document.getElementById('loginSub').innerText = t.loginS;
     document.getElementById('loginBtn').innerHTML = `<span class="emoji-anim">🔑</span> ${t.loginB}`;
-    document.getElementById('restaurantSpaceBtn').innerHTML = `<span class="emoji-anim">⚙️</span> ${t.restaurantSpaceB}`;
+    document.getElementById('regBtnText').innerText = t.restaurantSpaceB;
+    document.getElementById('installBtnText').innerText = t.installApp;
     document.getElementById('m-home').innerText = t.home;
     document.getElementById('m-back').innerText = t.back;
     document.getElementById('m-shop').innerText = t.shop;
@@ -375,6 +373,31 @@ function changeLanguage(lang) {
     toggleMenu();
 }
 
+function showRegistrationOptions() {
+    const categories = [
+        { name: 'Restaurants', url: 'https://www.alexlivraison.shop/form-restaurants.html' },
+        { name: 'Supermarchés', url: 'https://www.alexlivraison.shop/form-supermarches.html' },
+        { name: 'Boulangeries', url: 'https://www.alexlivraison.shop/form-boulangeries.html' },
+        { name: 'Pharmacies', url: 'https://www.alexlivraison.shop/form-pharmacies.html' },
+        { name: 'High-Tech', url: 'https://www.alexlivraison.shop/form-hightech.html' },
+        { name: 'Occasions', url: 'https://www.alexlivraison.shop/form-occasions.html' },
+        { name: 'Autres...', url: 'https://www.alexlivraison.shop/commercants.html' }
+    ];
+    
+    let message = "Choisissez votre catégorie de commerce :\n\n";
+    categories.forEach((cat, i) => {
+        message += `${i + 1}. ${cat.name}\n`;
+    });
+    message += "\nSélectionnez le numéro (1-7) :";
+    
+    const choice = prompt(message);
+    const index = parseInt(choice) - 1;
+    
+    if (index >= 0 && index < categories.length) {
+        window.location.href = categories[index].url;
+    }
+}
+
 async function checkPin(){
     const pin = document.getElementById('pinInput').value;
     if(!pin) return;
@@ -390,7 +413,19 @@ async function checkPin(){
         
         document.getElementById('shopName').innerText = CURRENT_SHOP.name;
         document.getElementById('shopIdDisplay').innerText = CURRENT_SHOP.shopId;
-        document.getElementById('nav-myshop').href = `shop-hightech.html?id=${CURRENT_SHOP.shopId}&from=dashboard`;
+        
+        // Show sound button after login
+        const soundBtn = document.querySelector('.sound-btn');
+        if(soundBtn) soundBtn.style.display = 'flex';
+        
+        // Dynamic shop link based on category
+        const categoryLinks = {
+            'hightech': 'shop-hightech.html',
+            'occasions': 'shop-occasions.html',
+            'restaurants': 'shop-restaurants.html'
+        };
+        const shopPage = categoryLinks[CURRENT_SHOP.category] || 'shop-hightech.html';
+        document.getElementById('nav-myshop').href = `https://www.alexlivraison.shop/${shopPage}?id=${CURRENT_SHOP.shopId}&from=dashboard`;
         
         if(CURRENT_SHOP.contractUrl) {
             document.getElementById('btn-download-contract').href = CURRENT_SHOP.contractUrl;
@@ -463,7 +498,6 @@ function startLiveListener() {
             activeOrders.forEach(order => renderOrderCard(order.id, order.data, grid));
         }, error => {
             console.error('❌ Firestore error:', error);
-        });
         });
 }
 
@@ -708,12 +742,31 @@ function exportPDF(){
         styles: { fontSize: 8 },
         columnStyles: { 2: { cellWidth: 70 } }
     });
-    doc.save(`Rapport_Tech_${CURRENT_SHOP.shopId}.pdf`);
+    doc.save(`Rapport_${CURRENT_SHOP.shopId}.pdf`);
 }
+
+// Initialize floating background logos
+function initFloatingLogos() {
+    const container = document.getElementById('bgLogos');
+    if(!container) return;
+    container.innerHTML = ''; // Clear existing
+    for(let i = 0; i < 8; i++) {
+        const logo = document.createElement('img');
+        logo.src = 'icon.jpg';
+        logo.className = 'floating-logo';
+        logo.style.left = Math.random() * 100 + '%';
+        logo.style.animationDuration = (15 + Math.random() * 15) + 's';
+        logo.style.animationDelay = -(Math.random() * 10) + 's';
+        container.appendChild(logo);
+    }
+}
+
+// Initialize on page load
+initFloatingLogos();
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw-partner.js');
+        navigator.serviceWorker.register('sw-partner.js').catch(e => console.log('SW registration failed:', e));
     });
 }
 
