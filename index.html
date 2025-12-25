@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
@@ -742,7 +742,7 @@ function renderOrderCard(id, data, container) {
     const itemsHtml = (data.items || []).map(i => `
         <div class="oc-item">
             <span class="oc-item-name">${i.qty || 1}x ${i.name || 'Produit'}</span>
-            <span>${parseFloat(i.originalTotal || i.partnerTotal || i.displayTotal || 0).toFixed(2)}€</span>
+            <span>${parseFloat(i.originalTotal || i.displayTotal || 0).toFixed(2)}€</span>
         </div>
         ${i.options && i.options.length ? `<div style="font-size:0.9em;color:#90a4ae;margin-left:10px;margin-bottom:5px">Opts: ${i.options.join(', ')}</div>` : ''}
     `).join('');
@@ -757,7 +757,7 @@ function renderOrderCard(id, data, container) {
         </div>
     ` : '';
     
-    const partnerNet = parseFloat(data.partnerNet || data.restaurantNet || data.totalPrice || 0).toFixed(2);
+    const partnerRevenue = parseFloat(data.originalTotal || data.restaurantNet || data.totalPrice || 0).toFixed(2);
 
     const card = document.createElement('div');
     card.className = `order-card ${statusColorClass}`;
@@ -771,7 +771,7 @@ function renderOrderCard(id, data, container) {
         <div class="oc-phone"><i class="fas fa-phone"></i> ${data.customer?.phone || 'N/A'}</div>
         ${addressHtml}
         <div class="oc-items">${itemsHtml}</div>
-        <div class="oc-total">Votre revenu: ${partnerNet} €</div>
+        <div class="oc-total">Votre revenu: ${partnerRevenue} €</div>
         <div class="oc-note" style="font-size:0.9em;color:#546e7a;margin-bottom:15px;background:#f5f7fa;padding:10px;border-radius:10px;line-height:1.4">
             Mode: <strong>${data.deliveryType || 'N/A'}</strong> | Paiement: <strong>${data.paymentMethod === 'card' ? 'CB (Payé)' : 'Espèces'}</strong>
         </div>
@@ -793,14 +793,47 @@ function renderOrderCard(id, data, container) {
     }
 }
 
-function updateStatus(id, status) {
+async function updateStatus(id, status) {
     if(status === 'cancelled' && !confirm("Êtes-vous sûr d'annuler cette commande ?")) return;
-    db.collection('orders').doc(id).update({
+    
+    await db.collection('orders').doc(id).update({
         status: status,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     });
+    
+    // When partner accepts order, notify couriers for delivery
+    if(status === 'accepted') {
+        const orderDoc = await db.collection('orders').doc(id).get();
+        const order = orderDoc.data();
+        if(order.deliveryType === 'Livraison') {
+            await notifyCouriers(id, order);
+        }
+    }
 }
 
+async function notifyCouriers(orderId, order) {
+    const courierFee = order.courierFee || (parseFloat(order.platformFee || 0) * 0.5).toFixed(2);
+    const couriersSnap = await db.collection('couriers').where('isOnline', '==', true).get();
+    
+    couriersSnap.forEach(async (courierDoc) => {
+        await db.collection('courier_notifications').add({
+            courierId: courierDoc.id,
+            orderId: orderId,
+            shopName: order.shopName,
+            shopAddress: order.shopAddress || order.from,
+            shopPhone: order.shopPhone || '',
+            customerName: order.customer?.name || '',
+            customerPhone: order.customer?.phone || '',
+            customerAddress: order.customer?.address || order.to,
+            courierFee: courierFee,
+            totalPrice: order.totalPrice,
+            parcelSize: order.parcelSize || 'Petit (S)',
+            status: 'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    });
+    console.log('Courier notifications sent for order:', orderId);
+}
 function loadBankInfo() {
     if(CURRENT_SHOP.bankDetails) {
         document.getElementById('bankOwner').value = CURRENT_SHOP.bankDetails.owner || '';
