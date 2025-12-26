@@ -1012,23 +1012,38 @@ async function archiveOrder(orderId) {
 // 📄 Load receipts/completed orders
 async function loadReceipts() {
     const container = document.getElementById('receipts-list');
-    if(!container || !CURRENT_SHOP.shopId) return;
+    if(!container) return;
+    if(!CURRENT_SHOP || !CURRENT_SHOP.shopId) {
+        container.innerHTML = '<div style="text-align:center;color:#90a4ae;padding:20px">🧾 Connectez-vous d\'abord</div>';
+        return;
+    }
     
     try {
-        // Get all orders for this shop and filter client-side
+        console.log('📄 Loading receipts for shop:', CURRENT_SHOP.shopId);
+        
+        // Simple query without orderBy (no index needed)
         const snap = await db.collection('orders')
             .where('shopId', '==', CURRENT_SHOP.shopId)
-            .orderBy('createdAt', 'desc')
-            .limit(50)
             .get();
         
-        // Filter for completed/delivered orders
+        console.log('📄 Total orders found:', snap.size);
+        
+        // Filter for completed/delivered orders and sort client-side
         const completedOrders = [];
         snap.forEach(d => {
             const data = d.data();
             if(data.status === 'completed' || data.status === 'delivered') {
                 completedOrders.push({ id: d.id, data: data });
             }
+        });
+        
+        console.log('📄 Completed orders:', completedOrders.length);
+        
+        // Sort by createdAt descending
+        completedOrders.sort((a, b) => {
+            const timeA = a.data.createdAt ? a.data.createdAt.seconds : 0;
+            const timeB = b.data.createdAt ? b.data.createdAt.seconds : 0;
+            return timeB - timeA;
         });
         
         if(completedOrders.length === 0) {
@@ -1064,7 +1079,7 @@ async function loadReceipts() {
         
     } catch(e) {
         console.error('❌ Error loading receipts:', e);
-        container.innerHTML = '<div style="text-align:center;color:#ef5350;padding:20px">❌ Erreur de chargement</div>';
+        container.innerHTML = '<div style="text-align:center;color:#ef5350;padding:20px">❌ ' + e.message + '</div>';
     }
 }
 
