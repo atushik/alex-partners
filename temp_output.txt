@@ -1,0 +1,8 @@
+﻿function updateStatus(id, status) {
+    if(status === 'cancelled' && !confirm("Êtes-vous sûr d'annuler cette commande ?")) return;
+    db.collection('orders').doc(id).update({
+        status: status,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+

@@ -82,8 +82,12 @@
   .shop-title { font-size: 1.4em; font-weight: 800; color: #1a237e; letter-spacing: -0.5px; }
   .shop-id { font-size: 0.85em; color: #90a4ae; margin-top: 3px; font-weight: 500; }
 
-  @keyframes stickerFloat { 0% { transform: translateY(0); } 50% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
-  .emoji-anim { display: inline-block; animation: stickerFloat 2.5s ease-in-out infinite; }
+  @keyframes stickerFloat { 0% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-5px) rotate(-5deg); } 50% { transform: translateY(0) rotate(0deg); } 75% { transform: translateY(-3px) rotate(5deg); } 100% { transform: translateY(0) rotate(0deg); } }
+  .emoji-anim { display: inline-block; animation: stickerFloat 2s ease-in-out infinite; }
+  @keyframes pulseGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255,152,0,0.5)); transform: scale(1); } 50% { filter: drop-shadow(0 0 10px rgba(255,152,0,0.8)); transform: scale(1.1); } }
+  .emoji-pulse { display: inline-block; animation: pulseGlow 1.5s ease-in-out infinite; }
+  @keyframes spinBounce { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
+  .emoji-spin { display: inline-block; animation: spinBounce 3s linear infinite; }
 
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
   .stat-card { background: #fff; padding: 30px; border-radius: 25px; box-shadow: var(--shadow); text-align: center; border: var(--glass-border); transition: transform 0.3s; position: relative; overflow: hidden; }
@@ -102,6 +106,7 @@
   .oc-new { border-left: 6px solid #2962ff; }
   .oc-cooking { border-left: 6px solid #00bcd4; }
   .oc-ready { border-left: 6px solid #00c853; }
+  .oc-delivering { border-left: 6px solid #1565c0; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
   
   .oc-header { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #f0f0f0; }
   .oc-id { font-weight: 800; color: #1a237e; font-size: 1em; background: #e3f2fd; padding: 6px 12px; border-radius: 10px; }
@@ -637,8 +642,13 @@ function startLiveListener() {
                 const data = doc.data();
                 console.log('📄 Order:', doc.id, 'Status:', data.status);
                 
-                // Only show orders with status 'paid' or 'accepted' or later stages
-                if(data.status === 'paid' || data.status === 'accepted' || data.status === 'cooking' || data.status === 'ready_for_pickup') {
+                // ❌ Skip delivered and cancelled orders
+                if(data.status === 'delivered' || data.status === 'cancelled' || data.status === 'completed') {
+                    return;
+                }
+                
+                // ✅ Show active orders: paid, accepted, cooking, ready_for_pickup, picked_up
+                if(data.status === 'paid' || data.status === 'accepted' || data.status === 'cooking' || data.status === 'ready_for_pickup' || data.status === 'picked_up') {
                     // Check if paid order is older than 5 minutes and not accepted
                     if(data.status === 'paid') {
                         const orderTime = data.createdAt ? data.createdAt.toMillis() : 0;
@@ -735,8 +745,12 @@ function renderOrderCard(id, data, container) {
         actionsHtml = `<button class="btn-act btn-ready" onclick="updateStatus('${id}', 'ready_for_pickup')"><i class="fas fa-box-open"></i> ${t.completed}</button>`;
     } else if(data.status === 'ready_for_pickup') {
         statusColorClass = 'oc-ready';
-        statusText = 'EN ATTENTE COURSIER 🛵';
-        actionsHtml = `<div style="width:100%;text-align:center;color:#2e7d32;font-weight:bold;padding:10px;background:#e8f5e9;border-radius:8px">En attente de prise en charge...</div>`;
+        statusText = '📦 EN ATTENTE COURSIER 🛵';
+        actionsHtml = `<div style="width:100%;text-align:center;color:#2e7d32;font-weight:bold;padding:10px;background:#e8f5e9;border-radius:8px">🛵 En attente de prise en charge...</div>`;
+    } else if(data.status === 'picked_up') {
+        statusColorClass = 'oc-delivering';
+        statusText = '🚴 EN COURS DE LIVRAISON';
+        actionsHtml = `<div style="width:100%;text-align:center;color:#1565c0;font-weight:bold;padding:10px;background:#e3f2fd;border-radius:8px">🚴 Le coursier livre la commande...</div>`;
     }
 
     const itemsHtml = (data.items || []).map(i => `
@@ -763,17 +777,17 @@ function renderOrderCard(id, data, container) {
     card.className = `order-card ${statusColorClass}`;
     card.innerHTML = `
         <div class="oc-header">
-            <span class="oc-id">#${id.substr(0,8)}</span>
-            <span class="oc-time">${data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleTimeString().substr(0,5) : '--:--'}</span>
+            <span class="oc-id"><span class="emoji-anim">🧾</span> #${id.substr(0,8)}</span>
+            <span class="oc-time"><span class="emoji-pulse">🕐</span> ${data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleTimeString().substr(0,5) : '--:--'}</span>
         </div>
         <div style="font-weight:900;color:#2962ff;margin-bottom:12px;font-size:1.1em">${statusText}</div>
-        <div class="oc-client">${data.customer?.name || 'Client'}</div>
-        <div class="oc-phone"><i class="fas fa-phone"></i> ${data.customer?.phone || 'N/A'}</div>
+        <div class="oc-client"><span class="emoji-anim">👤</span> ${data.customer?.name || 'Client'}</div>
+        <div class="oc-phone"><span class="emoji-anim">📱</span> ${data.customer?.phone || 'N/A'}</div>
         ${addressHtml}
-        <div class="oc-items">${itemsHtml}</div>
-        <div class="oc-total">Votre revenu: ${partnerRevenue} €</div>
+        <div class="oc-items"><div style="margin-bottom:8px;font-weight:700;color:#1a237e"><span class="emoji-spin">🛒</span> Articles:</div>${itemsHtml}</div>
+        <div class="oc-total"><span class="emoji-pulse">💰</span> Votre revenu: ${partnerRevenue} €</div>
         <div class="oc-note" style="font-size:0.9em;color:#546e7a;margin-bottom:15px;background:#f5f7fa;padding:10px;border-radius:10px;line-height:1.4">
-            Mode: <strong>${data.deliveryType || 'N/A'}</strong> | Paiement: <strong>${data.paymentMethod === 'card' ? 'CB (Payé)' : 'Espèces'}</strong>
+            <span class="emoji-anim">🚗</span> Mode: <strong>${data.deliveryType || 'N/A'}</strong> | <span class="emoji-anim">💳</span> Paiement: <strong>${data.paymentMethod === 'card' ? 'CB (Payé)' : 'Espèces'}</strong>
         </div>
         <div class="oc-actions">${actionsHtml}</div>
     `;
